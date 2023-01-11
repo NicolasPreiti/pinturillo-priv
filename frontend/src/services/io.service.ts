@@ -1,41 +1,57 @@
 import {io, Socket} from "socket.io-client"
+import { IChatMessage, IChatMessages } from "../components/chat-box/chat-box.interfaces"
+import { ICanvasInfo, ICoords, IMousePosition } from "../interfaces/draw.interface"
 
 const serverUrl = "http://localhost:3000"
 let socket: Socket
 
-const initSocket = (url = serverUrl): Socket => {
-  socket = io(url)
+export const initSocket = (roomName: string, url = serverUrl, ): Socket => {
+  socket = io(url, {
+    query: {
+      roomName
+    }
+  })
   return socket
 }
 
-const emitMousePos = (socket: Socket, data: any): void => {
+export const emitMousePos = (data: IMousePosition): void => {
   socket.emit("mousePos", data)
 }
 
-const onMousePos = (socket: Socket, cb: (data: any, emit: boolean) => void): void => {
-  socket.on("mousePos", (data: any) => {
-    cb(data, false)
+export const onMousePos = (cb: (cursorPos: ICoords, emit: boolean, color: string) => void): void => {
+  socket.on("mousePos", (data: IMousePosition) => {
+    cb(data.coords, false, data.color)
   })
 }
 
-const emitCleanPoints = (socket: Socket) => {
+export const emitCleanPoints = () => {
   socket.emit("cleanPoints")
 }
 
-const onCleanPoints = (points: any[]) => {
+export const onCleanPoints = (canvasInfo: ICanvasInfo) => {
   socket.on("cleanPoints", () => {
-    points = []
+    canvasInfo.points = []
   })
 }
 
-const emitCleanCanvas = (socket: Socket) => {
+export const emitCleanCanvas = () => {
   socket.emit("cleanCanvas")
 }
 
-const onCleanCanvas = (context: CanvasRenderingContext2D | null, {width, height}: {width: number, height: number}) => {
+export const onCleanCanvas = (context: CanvasRenderingContext2D | null, canvasInfo: ICanvasInfo) => {
   socket.on("cleanCanvas", () => { 
     if (!context) return
-    context.clearRect(0, 0, width, height)
+    context.clearRect(0, 0, canvasInfo.width, canvasInfo.height)
+  })
+}
+
+export const emitChatMessage = (chatMessage: IChatMessage) => {
+  socket.emit("chatMessage", chatMessage)
+}
+
+export const onChatMessage = (cb: (chatMessage: IChatMessage) => void) => {
+  socket.on("chatMessage", (chatMessage: IChatMessage) => {
+    cb(chatMessage)
   })
 }
 

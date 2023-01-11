@@ -13,14 +13,14 @@ export const router = createBrowserRouter([
         element: <HomePage />
       },
       {
-        path: "/room",
+        path: "/room/:roomName",
         element: <RoomPage />,
-        children: [
-          {
-            path: "",
-            element: <Draw />
-          }
-        ]
+        // children: [
+        //   {
+        //     path: "",
+        //     element: <Draw />
+        //   }
+        // ]
       }
     ]
   }

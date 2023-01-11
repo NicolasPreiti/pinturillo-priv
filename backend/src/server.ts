@@ -1,7 +1,7 @@
-import { Server } from 'socket.io'
+import cors from 'cors'
 import express from 'express'
 import { Server as HttpServer } from 'http'
-import cors from 'cors'
+import { Server } from 'socket.io'
 
 const PORT = 3000
 const app = express()
@@ -16,18 +16,29 @@ app.use(cors())
 
 io.on('connection', async (socket) => {
   const user = socket.id
-  console.log(user)
+
+  const roomName = socket.handshake.query.roomName as string
+  await socket.join(roomName)
 
   socket.on('mousePos', (data) => {
-    socket.broadcast.emit('mousePos', data)
+    socket.to(roomName).emit('mousePos', data)
   })
 
   socket.on('cleanPoints', () => {
-    socket.broadcast.emit('cleanPoints')
+    socket.to(roomName).emit('cleanPoints')
   })
 
   socket.on('cleanCanvas', () => {
-    socket.broadcast.emit('cleanCanvas')
+    socket.to(roomName).emit('cleanCanvas')
+  })
+
+  socket.on('chatMessage', (data) => {
+    socket.to(roomName).emit('chatMessage', data)
+  })
+
+  socket.on('disconnect', () => {
+    // console.log(io.sockets.adapter.rooms.get('riki'))
+    console.log('socket disconnect')
   })
 })
 
